@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Transfer};
-use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
-
+use anchor_spl::token_interface::{TokenAccount, TokenInterface};
+use solana_program::sysvar::clock::Clock;
 declare_id!("83wQtKodW8yUfWpNBMvjDbA1b8Bt15gTsyZW9oPVKnki");
 
 #[program]
@@ -11,7 +11,7 @@ pub mod presale_contract {
     use solana_program::native_token::LAMPORTS_PER_SOL;
 
     use super::*;
-
+    const HOUR: u64 = 60 * 60;
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
         msg!("Instruction Initialize");
 
@@ -27,7 +27,7 @@ pub mod presale_contract {
         Ok(msg!("Intialize Success"))
     }
 
-    pub fn set_presale_info(ctx: Context<SetPresaleInfo>, round: u64) -> Result<()> {
+    pub fn set_presale_info(ctx: Context<SetPresaleInfo>, round: u64, duration: u64) -> Result<()> {
         msg!("Instruction Setting Presale Infos");
 
         let presale_info = &mut ctx.accounts.presale_info;
@@ -53,6 +53,10 @@ pub mod presale_contract {
             },
             _ => { return err!(ErrCode::InvalidCommand); }
         }
+        let current_timestamp = Clock::get().unwrap().unix_timestamp as u64;
+        presale_info.start_time = current_timestamp;
+        presale_info.end_time = current_timestamp + duration * HOUR;
+
         Ok(msg!("Successfully Setting Round"))
     }
 
@@ -71,6 +75,10 @@ pub mod presale_contract {
                 return err!(ErrCode::InvalidDuration);
             },
             _ => {
+                let current_timestamp = Clock::get().unwrap().unix_timestamp as u64;
+                if current_timestamp < presale_info.start_time || current_timestamp > presale_info.end_time {
+                    return err!(ErrCode::InvalidDuration);
+                }
                 let cpi_context = CpiContext::new(
                     ctx.accounts.system_program.to_account_info(),
                     system_program::Transfer {
@@ -155,6 +163,8 @@ pub struct PresaleInfo {
     pub rate: u64,
     pub total_amount: u64,
     pub round_amount: u64,
+    pub start_time: u64,
+    pub end_time: u64,
 }
 
 #[account]
@@ -165,7 +175,7 @@ pub struct UserInfo {
 }
 
 impl PresaleInfo {
-    pub const LEN: usize = 1 + 1 + 8 + 8 + 8;
+    pub const LEN: usize = 1 + 1 + 8 + 8 + 8 + 8 + 8;
 }
 
 impl UserInfo {
@@ -187,5 +197,5 @@ pub enum ErrCode {
     InvalidDuration,
 
     #[msg("UnKnown Command to set Presale Round")]
-    InvalidCommand
+    InvalidCommand,
 }

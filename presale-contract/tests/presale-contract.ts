@@ -85,7 +85,7 @@ describe("presale-contract", () => {
 
   it("SetPresaleInfo  0", async () => {
     const tx = await program.methods
-                      .setPresaleInfo(new BN(0))
+                      .setPresaleInfo(new BN(0), new BN(1))
                       .accounts({
                           initializer: admin.publicKey
                       })
@@ -97,7 +97,7 @@ describe("presale-contract", () => {
 
   it("SetPresaleInfo  1", async () => {
     const tx = await program.methods
-                      .setPresaleInfo(new BN(1))
+                      .setPresaleInfo(new BN(1), new BN(1))
                       .accounts({
                           initializer: admin.publicKey
                       })
@@ -109,7 +109,7 @@ describe("presale-contract", () => {
 
   it("SetPresaleInfo  2", async () => {
     const tx = await program.methods
-                      .setPresaleInfo(new BN(2))
+                      .setPresaleInfo(new BN(2), new BN(1))
                       .accounts({
                           initializer: admin.publicKey
                       })
@@ -121,7 +121,7 @@ describe("presale-contract", () => {
 
   it("SetPresaleInfo  3", async () => {
     const tx = await program.methods
-                      .setPresaleInfo(new BN(3))
+                      .setPresaleInfo(new BN(3), new BN(1))
                       .accounts({
                           initializer: admin.publicKey
                       })
@@ -133,7 +133,7 @@ describe("presale-contract", () => {
 
   it("SetPresaleInfo  4", async () => {
     const tx = await program.methods
-                      .setPresaleInfo(new BN(4))
+                      .setPresaleInfo(new BN(4), new BN(1))
                       .accounts({
                           initializer: admin.publicKey
                       })
