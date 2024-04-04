@@ -7,11 +7,14 @@ skip-lint = false
 [programs.localnet]
 presale_contract = "83wQtKodW8yUfWpNBMvjDbA1b8Bt15gTsyZW9oPVKnki"
 
+[programs.devnet]
+presale_contract = "83wQtKodW8yUfWpNBMvjDbA1b8Bt15gTsyZW9oPVKnki"
+
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
