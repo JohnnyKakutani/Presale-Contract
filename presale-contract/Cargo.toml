@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "programs/*"
+    "programs/presale-contract"
 ]
 resolver = "2"
 

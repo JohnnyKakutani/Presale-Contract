@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Transfer};
-use anchor_spl::token_interface::{TokenAccount, TokenInterface};
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
 declare_id!("83wQtKodW8yUfWpNBMvjDbA1b8Bt15gTsyZW9oPVKnki");
 
@@ -8,6 +8,7 @@ declare_id!("83wQtKodW8yUfWpNBMvjDbA1b8Bt15gTsyZW9oPVKnki");
 pub mod presale_contract {
 
     use anchor_lang::system_program;
+    use solana_program::native_token::LAMPORTS_PER_SOL;
 
     use super::*;
 
@@ -26,7 +27,7 @@ pub mod presale_contract {
         Ok(msg!("Intialize Success"))
     }
 
-    pub fn setPresaleInfo(ctx: Context<SetPresaleInfo>, round: u64) -> Result<()> {
+    pub fn set_presale_info(ctx: Context<SetPresaleInfo>, round: u64) -> Result<()> {
         msg!("Instruction Setting Presale Infos");
 
         let presale_info = &mut ctx.accounts.presale_info;
@@ -55,7 +56,7 @@ pub mod presale_contract {
         Ok(msg!("Successfully Setting Round"))
     }
 
-    pub fn purchaseToken(ctx: Context<PurchaseToken>, amount: u64) -> Result<()> {
+    pub fn purchase_token(ctx: Context<PurchaseToken>, amount: u64) -> Result<()> {
         msg!("Instruction Purchase Token");
         
         let presale_info = &mut ctx.accounts.presale_info;
@@ -69,7 +70,7 @@ pub mod presale_contract {
             PresaleRound::None => {
                 return err!(ErrCode::InvalidDuration);
             },
-            PresaleRound::First | PresaleRound::Second | PresaleRound::Third | PresaleRound::Fourth => {
+            _ => {
                 let cpi_context = CpiContext::new(
                     ctx.accounts.system_program.to_account_info(),
                     system_program::Transfer {
@@ -78,7 +79,7 @@ pub mod presale_contract {
                     }
                 );
 
-                system_program::transfer(cpi_context, amount * presale_info.rate / 10000)?;
+                system_program::transfer(cpi_context, amount * presale_info.rate * 10000)?;
 
                 let cpi_accounts = Transfer {
                     from: ctx.accounts.admin_token_address.to_account_info(),
@@ -88,15 +89,15 @@ pub mod presale_contract {
                 let cpi_program = ctx.accounts.token_program.to_account_info();
                 let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
 
-                token::transfer(cpi_ctx, amount)?;
+                token::transfer(cpi_ctx, amount * LAMPORTS_PER_SOL)?;
 
                 presale_info.total_amount += amount;
                 presale_info.round_amount += amount;
                 user_info.purchase_amount += amount;
                 user_info.purchase_count += 1;
             },
-            _ => { return err!(ErrCode::InvalidCommand); }
         }
+        
         Ok(msg!("Purchase Success"))
     }
 
@@ -164,11 +165,11 @@ pub struct UserInfo {
 }
 
 impl PresaleInfo {
-    pub const LEN: usize = 1 + 8 + 8;
+    pub const LEN: usize = 1 + 1 + 8 + 8 + 8;
 }
 
 impl UserInfo {
-    pub const LEN: usize = 1 + 1 + 8 + 8 + 8;
+    pub const LEN: usize = 1 + 8 + 8;
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
